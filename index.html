@@ -91,16 +91,23 @@ label {
         <div id="map" class="bg-light position-relative"></div>
       </div>
       <aside id="about" class="col-12 col-md-5 col-lg-4 text-dark py-2">
+
+        <div id="ui" class="dropdown">
+          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            Housing Statistics
+          </a>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"></div>
+          </div>
+
         <section>
           <h2 class="h2 text-dark">About this map</h2>
-          <p>A fan brush is a fantastic piece of equipment. Use it. Make friends with it. We're not trying to teach you
-            a thing to copy. We're just here to teach you a technique, then let you loose into the world. We'll put a
-            happy little sky in here.</p>
-          <p>We'll paint one happy little tree right here. The secret to doing anything is believing that you can do it.
-            Anything that you believe you can do strong enough, you can do. Anything. As long as you believe. Let's make
-            a nice big leafy tree.</p>
-          <p>Lorem Ipsum by <a href="https://www.bobrosslipsum.com/index.html">Bob Ross quotes generator</a>.</p>
-          <p>Everything's not great in life, but we can still find beauty in it. I'll go over the colors one more time that we use: Titanium white, Thalo green, Prussian blue, Van Dyke brown, Alizarin crimson, Sap green, Cad yellow, and Permanent red. Only think about one thing at a time. Don't get greedy. In painting, you have unlimited power. You have the ability to move mountains. You can bend rivers. But when I get home, the only thing I have power over is the garbage. I get carried away with this brush cleaning.</p>
+          <p> Created with Mapshaper, flat files and D3 documents. </p>
+          <p> My inspiration to make this map came from recent events and personal experience. 
+          The end of the rent moriatorium and articles on the rise of rental prices to pre-pandemic housing roused a question. 
+          How available is affordble housing? My part comes from my own frustration at finding a new home myself. 
+          Looking at a different state and time period helps gives me a more objective view. </p>
+          <p> </p>
         </section>
       </aside>
     </section>
@@ -195,6 +202,58 @@ const Conn = svg.append('g')
   .join('path')
   .attr('d', path)
   .attr('class', 'counties');
+
+ // define color generator
+const color = d3.scaleOrdinal(d3.schemeDark2);
+
+console.log(svg)
+
+const Housing = svg.append('g')  // append new g element
+  .selectAll('point')  // select all the pointa
+  .data(stateData, housingData)  // use the state geojson for coordinates and housing CSV data
+  .attr('cx', d => {  // feed the long/lat to the projection generator
+    d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
+    return d.position[0];  // position the x
+  })
+  .attr('cy', d => {
+    return d.position[1];  // position the y
+  })
+  .style('fill', d => {
+  return color(d.Code);
+})
+  .attr('class', 'Town');  // give each a class name
+
+// create tooltip
+const tooltip = d3.select('.containerfluid')
+  .append("div")
+  .attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("background", "#000")
+  .text("A simple tooltip")
+  Housing.on('mouseover', (d, i, nodes) => {
+	coords = d3.mouse(nodes[i])
+	console.log(coords)
+  tooltip.style('left', `S{coords[0] + 30}px`)
+  .style('top', `${coords[1] + 30}px`);
+  d3.select(nodes[i])
+  .classed('hover', true)
+  tooltip.classed('inivisible', false)
+  .html(`<h4>${d.Town}</h4>${d.Census-Units}<br>${Number(d.Total).toLocaleString()} 
+  units`)
+})
+
+Housing.on('mousemove', (d, i, nodes) => {
+  d3.select(nodes[i])
+    .classed('hover', true)
+    tooltip.classed('invisible', false)
+})
+
+Housing.on('mouseout', (d, i, nodes) => {
+  d3.select(nodes[i])
+  .classed('hover', true)
+  tooltip.classed('invisible', false)
+})
 } // end drawMap()
 
 function updateMap() {
@@ -203,72 +262,18 @@ function updateMap() {
 
 function drawLegend() {
 
-  // select div and create legend title
-const legend = document.querySelector('.legend')
-legend.innerHTML = "<h3><span>2011</span> Affordable Housing</h3><ul>";
+ 
 
-// loop through the break values
-for (let i = 0; i < breaks.length - 1; i++) {
-    
-    // determine color value 
-    const color = colorize(breaks[i], breaks);
+Legend(d3.scaleDivergingSqrt([0, 7.5, 15], d3.interpolatedRdBu), {
+title: "Annual Change",
+tickFormat: "+%"
 
-    // create legend item
-    const classRange = `<li><span style="background:${color}"></span>
-        ${breaks[i].toLocaleString()}% &mdash;
-        ${breaks[i + 1].toLocaleString()}$ </li>`
-
-    // append to legend unordered list item
-    legend.innerHTML += classRange;
+})
 }
-// close legend unordered list
-legend.innerHTML += "</ul>";
+ // end drawLegend
 
-// create a Leaflet control for the legend
-const legendControl = L.control({
-    position: 'topright'
-});
+function createSliderUI(ahCSV) {
 
-// when the control is added to the map
-legendControl.onAdd = function (map) {
-
-    // create a new division element with class of 'legend' and return
-    const legend = L.DomUtil.create('div', 'legend');
-    return legend;
-
-};
-
-// add the legend control to the map
-legendControl.addTo(map);
-
-// define color generator
-const color = d3.scaleOrdinal(d3.schemeDark2);
-
-} // end drawLegend
-
-function createSliderUI() {
-
-  // create Leaflet control for the slider
-const sliderControl = L.control({ position: 'topleft'} );
-
-// when added to the map
-sliderControl.onAdd = function(map) {
-
-    // select an existing DOM element with an id of "ui-controls"
-    const slider = L.DomUtil.get("ui-controls");
-
-    // disable scrolling of map while using controls
-    L.DomEvent.disableScrollPropagation(slider);
-
-    // disable click events while using controls
-    L.DomEvent.disableClickPropagation(slider);
-
-    // return the slider from the onAdd method
-    return slider;
-}
-
-// add the control to the map
-sliderControl.addTo(map);
 
 }
 
