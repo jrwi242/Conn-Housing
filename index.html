@@ -7,8 +7,8 @@
   
   <title>Affordable Housing Statistics in Conneticut for 2011-2016</title>
   
-  <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/cerulean/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-C++cugH8+Uf86JbNOnQoBweHHAe/wVKN/mb0lTybu/NZ9sEYbd+BbbYtNpWYAsNP" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/sandstone/bootstrap.min.css" 
+  integrity="sha384-zEpdAL7W11eTKeoBJK1g79kgl9qjP7g84KfK3AZsuonx38n8ad+f5ZgXtoSDxPOh" crossorigin="anonymous">
   <style>
     #map {
       width: 100%;
@@ -19,6 +19,12 @@
       max-height: calc(80vh);
       overflow-y: scroll;
     }
+
+    .counties {
+  fill: #61aab6;
+  stroke: whitesmoke;
+  stroke-width: .7;
+}
 
     /* Small devices (landscape phones, 576px and up) */
     @media (min-width: 576px) {}
@@ -102,7 +108,43 @@
   <script src="https://unpkg.com/topojson@3"></script>
 
   <script>
+// Papa parse
 
+// Papa.parse('data/Affordable_Housing.csv', {
+
+// download: true,
+// header: true,
+// complete: function(data) {
+
+//     // data is accessible to us here
+//     console.log('data: ', data);
+
+//     // note that Towns is also accessible here!
+//   //  console.log('Town: ', Town);
+
+//     }
+// }); // end of Papa.parse()
+
+
+// asynchronous calls to data files
+const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
+const ahCSV = d3.csv('data/Affordable_Housing.csv');
+
+// use promise to call all data files, then send data to callback
+Promise.all([stateJson, ahCSV])
+  .then(drawMap)
+  .catch(error => {
+    console.log(error)
+  });
+
+  // function called when Promise above is complete
+function drawMap(data) {
+  
+  console.log(data);  // our two datasets within an array
+
+  // data is array of our two datasets
+  const stateData = data[0];
+  const housingData = data[1];
 // select the HTML element that will hold our map
 const mapContainer = d3.select('#map')
 
@@ -110,11 +152,45 @@ const mapContainer = d3.select('#map')
 const width = mapContainer.node().offsetWidth - 60;
 const height = mapContainer.node().offsetHeight - 60;
 
-// create and append a new SVG element to the map div
 const svg = mapContainer
   .append('svg')
-  .attr('width', width) // provide width and height attributes
+  .attr('width', width)
   .attr('height', height)
+  .classed('position-absolute', true) // add bootstrap class
+  .style('top', 40)
+  .style('left', 30);
+
+  const geojson = topojson.feature(stateData, {
+  type: 'GeometryCollection',
+  geometries: stateData.objects.cb_2018_09_bg_500k.geometries
+});
+
+const projection = d3.geoAlbersUsa()
+  .fitSize([width, height], geojson);
+
+const path = d3.geoPath()
+  .projection(projection)
+
+const Conn = svg.append('g')
+  .selectAll('path')
+  .data(geojson.features)
+  .join('path')
+  .attr('d', path)
+  .attr('class', 'counties');
+} // end drawMap()
+
+function updateMap() {
+
+} // end updateMap()
+
+function drawLegend() {
+
+} // end drawLegend
+
+function createSliderUI() {
+
+}
+
 
 
   </script>
