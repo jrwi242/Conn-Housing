@@ -228,9 +228,6 @@ const tooltip = d3.select('.containerfluid')
   .append("div")
   .attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
   .style("position", "absolute")
-  .style("z-index", "10")
-  .style("background", "#000")
-  .text("A simple tooltip")
   Housing.on('mouseover', (d, i, nodes) => {
 	coords = d3.mouse(nodes[i])
 	console.log(coords)
@@ -239,7 +236,7 @@ const tooltip = d3.select('.containerfluid')
   d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('inivisible', false)
-  .html(`<h4>${d.Town}</h4>${d.Census-Units}<br>${Number(d.Total).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.Percent-Affordable}<br>${Number(d.Total).toLocaleString()} 
   units`)
 })
 
@@ -256,13 +253,74 @@ Housing.on('mouseout', (d, i, nodes) => {
 })
 } // end drawMap()
 
-function updateMap() {
+function updateMap(HousingData, housing) {
 
+  // array to hold select options
+var uniqueTypes = [];
+
+// loop through all features and push unique types to array
+HousingData.forEach(function (Housing) {
+  if (!uniqueTypes.includes(Housing.all)) {
+    uniqueTypes.push(Housing.selectAll);
+  }
+});
+
+// sort strings alphabetically
+uniqueTypes.sort();
+
+// add an Housing Stats to the beginning
+uniqueTypes.unshift('Housing Stats');
+
+  // select all the options (that don't exist yet)
+d3.select('#ui .dropdown-menu').selectAll('a')
+  .data(uniqueTypes) // use array as data
+  .join('a') // append a new option element for each data item
+  .text(d => {
+    return d // use the item as text
+  })
+  .attr('value', d => {
+    return d // use the time as value attribute
+  })
+  .attr('href', '#')
+  .classed('dropdown-item', true)
+  .on('click', onchange);  // when the user clicks call onchange function
+
+  function onchange() {
+  // get the currently selected value
+  let val = d3.select(this).attr('value');
+  
+  // change the display property for each circle
+  facilities.style('display', d => {
+    if (val === 'Housing Stats') return 'inline';
+    if (d.all != val) return 'none';
+  });
+
+  d3.select('#ui > a').html(val);  // update the UI with current val
+}
 } // end updateMap()
 
-function drawLegend() {
+function drawLegend(svg, width, height) {
+
+  
+  const legend = svg.append('g')
+     .attr('dy', '1.3em')
+     .attr('class', 'legend')
+     .attr('transform', 'translate(' + (width - 40) + ',' + (height - 20) + ')')
+     .selectAll('g')
+     .data([5e6, 2e7])
+     .join('g');
 
  
+  legend.append('text')
+     .attr('y', d => {
+      // return -2 * radius(d);
+     })
+     .attr('dy', '1.3em')
+     .text(d3.format('.1s'));
+
+  legend.append('text')
+     .attr('y', 16)
+     .text('units');
 
 Legend(d3.scaleDivergingSqrt([0, 7.5, 15], d3.interpolatedRdBu), {
 title: "Annual Change",
