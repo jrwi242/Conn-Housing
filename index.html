@@ -26,6 +26,33 @@
   stroke-width: .7;
 }
 
+#ui-controls {
+    width: 176px;
+    padding: 8px 25px 8px 15px;
+    background: rgba(75, 75, 75, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    color: whitesmoke;
+}
+
+#ui-controls .min {
+    float: left;
+}
+
+#ui-controls .max {
+    float: right;
+    margin-right: -15px;
+}
+
+.year-slider {
+    width: 100%;
+}
+
+label {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
     /* Small devices (landscape phones, 576px and up) */
     @media (min-width: 576px) {}
 
@@ -85,6 +112,13 @@
           <li><a href="https://catalog.data.gov/dataset/affordable-housing-by-town-2011-present">meta data</a></li>
         </ul>
       </div>
+
+      <div id="map"></div>
+<div id="ui-controls">
+    <input type="range" min="2011" max="2016"
+           value="2011" step="1" class="year-slider">
+    </input>
+</div>
     </footer>
   </div> <!-- end .container-fluid -->
 
@@ -98,33 +132,17 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"
-  integrity="sha512-EbdJQSugx0nVWrtyK3JdQQ/03mS3Q1UiAhRtErbwl1YL/+e2hZdlIcSURxxh7WXHTzn83sjlh2rysACoJGfb6g=="
-  crossorigin="anonymous" 
-  referrerpolicy="no-referrer">
-</script>
 
   <script src="https://d3js.org/d3.v5.js"></script>
   <script src="https://unpkg.com/topojson@3"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"
+    integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ=="
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer">
+</script>
+
   <script>
-// Papa parse
-
-// Papa.parse('data/Affordable_Housing.csv', {
-
-// download: true,
-// header: true,
-// complete: function(data) {
-
-//     // data is accessible to us here
-//     console.log('data: ', data);
-
-//     // note that Towns is also accessible here!
-//   //  console.log('Town: ', Town);
-
-//     }
-// }); // end of Papa.parse()
-
 
 // asynchronous calls to data files
 const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
@@ -158,7 +176,7 @@ const svg = mapContainer
   .attr('height', height)
   .classed('position-absolute', true) // add bootstrap class
   .style('top', 40)
-  .style('left', 30);
+  .style('left', 40);
 
   const geojson = topojson.feature(stateData, {
   type: 'GeometryCollection',
@@ -185,13 +203,74 @@ function updateMap() {
 
 function drawLegend() {
 
+  // select div and create legend title
+const legend = document.querySelector('.legend')
+legend.innerHTML = "<h3><span>2011</span> Affordable Housing</h3><ul>";
+
+// loop through the break values
+for (let i = 0; i < breaks.length - 1; i++) {
+    
+    // determine color value 
+    const color = colorize(breaks[i], breaks);
+
+    // create legend item
+    const classRange = `<li><span style="background:${color}"></span>
+        ${breaks[i].toLocaleString()}% &mdash;
+        ${breaks[i + 1].toLocaleString()}$ </li>`
+
+    // append to legend unordered list item
+    legend.innerHTML += classRange;
+}
+// close legend unordered list
+legend.innerHTML += "</ul>";
+
+// create a Leaflet control for the legend
+const legendControl = L.control({
+    position: 'topright'
+});
+
+// when the control is added to the map
+legendControl.onAdd = function (map) {
+
+    // create a new division element with class of 'legend' and return
+    const legend = L.DomUtil.create('div', 'legend');
+    return legend;
+
+};
+
+// add the legend control to the map
+legendControl.addTo(map);
+
+// define color generator
+const color = d3.scaleOrdinal(d3.schemeDark2);
+
 } // end drawLegend
 
 function createSliderUI() {
 
+  // create Leaflet control for the slider
+const sliderControl = L.control({ position: 'topleft'} );
+
+// when added to the map
+sliderControl.onAdd = function(map) {
+
+    // select an existing DOM element with an id of "ui-controls"
+    const slider = L.DomUtil.get("ui-controls");
+
+    // disable scrolling of map while using controls
+    L.DomEvent.disableScrollPropagation(slider);
+
+    // disable click events while using controls
+    L.DomEvent.disableClickPropagation(slider);
+
+    // return the slider from the onAdd method
+    return slider;
 }
 
+// add the control to the map
+sliderControl.addTo(map);
 
+}
 
   </script>
 </body>
