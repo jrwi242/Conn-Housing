@@ -44,7 +44,7 @@
 }
 
 .housing {
-  fill: #cf5635;
+  fill: #000080;
   stroke: white;
   stroke-width: .3;
   opacity: 1;
@@ -113,6 +113,7 @@ label {
       <div class="col mx-2">
         <h1 class="h1">Affordable Housing in Conneticut</h1>
       </div>
+      
     </header>
 
     <section class="row bg-secondary ">
@@ -128,20 +129,22 @@ label {
           </a>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"></div>
           </div>
+          <img src="data/Connecticut-state-flag.jpg">
    <div id="map"></div>
 <div id="ui-controls">
     <input type="range" min="2011" max="2016"
            value="2011" step="1" class="year-slider">
     </input>
-</div>
-        <section>
+</div>   
+        <section>   
           <h2 class="h2 text-dark">About this map</h2>
+          
           <p> Created with Mapshaper, flat files and D3 documents. </p>
           <p> My inspiration to make this map came from recent events and personal experience. 
           The end of the rent moriatorium and articles on the rise of rental prices to pre-pandemic housing roused a question. 
           How available is affordble housing? My part comes from my own frustration at finding a new home myself. 
           Looking at a different state and time period helps gives me a more objective view. </p>
-          <p> </p>
+     
         </section>
       </aside>
     </section>
@@ -151,6 +154,7 @@ label {
           <li>jrwi242 or Joyia Williams</li>
           <li>December 12, 2021</li>
           <li><a href="https://catalog.data.gov/dataset/affordable-housing-by-town-2011-present">meta data</a></li>
+          <li><a href="http://geojson.xyz/"> Wesite for shapefiles</a></li>
         </ul>
       </div>
 
@@ -252,9 +256,7 @@ const housing = svg.append('g')  // append new g element
   .attr('cy', d => {
     return d.position[1];  // position the y
   })
-  .attr('cy', d => {
-    return d.position[1];  // position the y
-  })
+ 
   .attr('r', d => {
     return radius(+d.Total);
   })
@@ -267,10 +269,11 @@ const housing = svg.append('g')  // append new g element
 const tooltip = d3.select('.container-fluid')
 	.append('div')
 	.attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
+
 housing.on('mouseover', (d, i, nodes) => {
 	coords = d3.mouse(nodes[i])
 	console.log(coords)
-  tooltip.style('left', `S{coords[0] + 30}px`)
+  tooltip.style('left', `${coords[0] + 30}px`)
   .style('top', `${coords[1] + 30}px`);
   d3.select(nodes[i])
   .classed('hover', true)
