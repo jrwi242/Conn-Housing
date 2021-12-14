@@ -26,6 +26,17 @@
   stroke-width: .7;
 }
 
+.housing {
+  fill: #cf5635;
+  stroke: white;
+  stroke-width: .3;
+  opacity: 1;
+}
+
+.housing:hover {
+  stroke-width: 2;
+}
+
 #ui-controls {
     width: 176px;
     padding: 8px 25px 8px 15px;
@@ -214,6 +225,7 @@ const color = d3.scaleOrdinal(d3.schemeDark2);
 
 console.log(svg)
 
+
 const housing = svg.append('g')  // append new g element
   .selectAll('point')  // select all the pointa
   .data(stateData, housingData)  // use the state geojson for coordinates and housing CSV data
@@ -224,29 +236,116 @@ const housing = svg.append('g')  // append new g element
   .attr('cy', d => {
     return d.position[1];  // position the y
   })
+  .attr('cy', d => {
+    return d.position[1];  // position the y
+  })
   .style('fill', d => {
   return color(d.Percent-Affordable);
 })
   .attr('class', 'Town');  // give each a class name
 
-// Create  div for the tooltip and hide with opacity
-const tooltip = d3.select('.container-fluid').append('div')
-  .attr('class', 'my-tooltip bg-warning text-white py-1 px-2 rounded position-absolute invisible');
+// Create div for the tooltip and hide with opacity
+const tooltip = d3.select('.container-fluid')
+	.append('div')
+	.attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
+housing.on('mouseover', (d, i, nodes) => {
+	coords = d3.mouse(nodes[i])
+	console.log(coords)
+  tooltip.style('left', `S{coords[0] + 30}px`)
+  .style('top', `${coords[1] + 30}px`);
+  d3.select(nodes[i])
+  .classed('hover', true)
+  tooltip.classed('invisible', false)
+  .html(`<h4>${d.Town}</h4>${d.Total-Assisted-Units}<br>${Number(d.Total).toLocaleString()} 
+  units`)
+})
 
-// when mouse moves over the mapContainer
-mapContainer
-  .on('mousemove', event => {
-    // update the position of the tooltip
-    tooltip.style('left', (d3.event.pageX + 10) + 'px')
-      .style('top', (d3.event.pageY - 30) + 'px');
-  });
+housing.on('mousemove', (d, i, nodes) => {
+  d3.select(nodes[i])
+    .classed('hover', true)
+    tooltip.classed('invisible', false)
+})
+
+housing.on('mouseout', (d, i, nodes) => {
+  d3.select(nodes[i])
+  .classed('hover', true)
+  tooltip.classed('invisible', false)
+})
+
+  drawLegend(svg, width, height, radius)
+  filterByAttribute(housingData, housing, color);
 } // end drawMap()
 
-function filterByAttribute() {
+function filterByAttribute(housingData, housing) {
+// array to hold select options
+let uniqueTypes = [];
 
+// loop through all features and push unique types to array
+housingData.forEach(function (housing) {
+  if (!uniqueTypes.includes(housing.Total-Assisted-Units)) {
+    uniqueTypes.push(housing.Total-Assisted-Units);
+  }
+});
+
+// sort strings alphabetically
+uniqueTypes.sort();
+
+// add an all facilities to the beginning
+uniqueTypes.unshift('All Housing Stats');
+
+// select all the options (that don't exist yet)
+d3.select('#ui .dropdown-menu').selectAll('a')
+  .data(uniqueTypes) // use array as data
+  .join('a') // append a new option element for each data item
+  .text(d => {
+    return d // use the item as text
+  })
+  .attr('value', d => {
+    return d // use the time as value attribute
+  })
+  .attr('href', '#')
+  .classed('dropdown-item', true)
+  .on('click', onchange);  // when the user clicks call onchange function
+
+  function onchange() {
+  // get the currently selected value
+  let val = d3.select(this).attr('value');
+  
+  // change the display property for each circle
+  facilities.style('display', d => {
+    if (val === 'All Housing Stats') return 'inline';
+    if (d.Industry_Type != val) return 'none';
+  });
+
+  d3.select('#ui > a').html(val);  // update the UI with current val
+}
 }
 
-function drawLegend( ) {
+function drawLegend(svg, width, height, radius ) {
+  const legend = svg.append('g')
+  .attr('dy', '1.3em')
+  .attr('class', 'legend')
+  .attr('transform', 'translate(' + (width - 40) + ',' + (height - 20) + ')')
+  .selectAll('g')
+  .data([5e6, 2e7])
+  .join('g');
+
+legend.append('circle')
+  .attr('cy', d => {
+    return -radius(d);
+  })
+  .attr('r', radius);
+
+legend.append('text')
+  .attr('y', d => {
+    return -2 * radius(d);
+  })
+  .attr('dy', '1.3em')
+  .text(d3.format('.1s'));
+
+legend.append('text')
+  .attr('y', 16)
+  .text('Units');
 
 } // end draw legend
 
