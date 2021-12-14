@@ -20,6 +20,23 @@
       overflow-y: scroll;
     }
 
+
+    .legend circle {
+      fill: none;
+      stroke: #ccc;
+    }
+
+    .legend text {
+      fill: #777;
+      font: 10px sans-serif;
+      text-anchor: middle;
+    }
+
+#ui {
+   position: absolute;
+   right: 1em;
+   top: 1em;
+}    
     .counties {
   fill: #61aab6;
   stroke: whitesmoke;
@@ -59,11 +76,6 @@
     width: 100%;
 }
 
-#ui {
-   position: absolute;
-   right: 1em;
-   top: 1em;
-}
 
 label {
     font-size: 1.1em;
@@ -221,7 +233,7 @@ const Conn = svg.append('g')
   .attr('class', 'counties');
 
   // define radius generator
-const radius = d3.scaleSqrt().domain([0, 1e6]).range([1, 6]);
+const radius = d3.scaleSqrt().domain([0, 1e6]).range([1, 9]);
 
  // define color generator
 const color = d3.scaleOrdinal(d3.schemeDark2);
@@ -247,7 +259,7 @@ const housing = svg.append('g')  // append new g element
     return radius(+d.Total);
   })
   .style('fill', d => {
-  return color(d.Percent-Affordable);
+  return color(d.Percent_Affordable);
 })
   .attr('class', 'Town');  // give each a class name
 
@@ -263,7 +275,7 @@ housing.on('mouseover', (d, i, nodes) => {
   d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.Total-Assisted-Units}<br>${Number(d.Total).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
   units`)
 })
 
@@ -332,9 +344,9 @@ function drawLegend(svg, width, height, radius ) {
   const legend = svg.append('g')
   .attr('dy', '1.3em')
   .attr('class', 'legend')
-  .attr('transform', 'translate(' + (width - 40) + ',' + (height - 20) + ')')
+  .attr('transform', 'translate(' + (width - 20) + ',' + (height - 20) + ')')
   .selectAll('g')
-  .data([5e6, 2e7])
+  .data([1e4, 2e4])
   .join('g');
 
 legend.append('circle')
