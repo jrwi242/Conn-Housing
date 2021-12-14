@@ -321,7 +321,7 @@ d3.select('#ui .dropdown-menu').selectAll('a')
   // change the display property for each circle
   housing.style('display', d => {
     if (val === 'All Housing Stats') return 'inline';
-    if (d.Census-Units != val) return 'none';
+    if (d.Census_Units != val) return 'none';
   });
 
   d3.select('#ui > a').html(val);  // update the UI with current val
