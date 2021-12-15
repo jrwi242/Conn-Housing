@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -28,31 +28,32 @@
 
     .legend text {
       fill: #777;
-      font: 10px sans-serif;
+      font: 14px sans-serif;
       text-anchor: middle;
     }
-
-#ui {
-   position: absolute;
-   right: 1em;
-   top: 1em;
-}    
+ 
     .counties {
   fill: #61aab6;
   stroke: whitesmoke;
   stroke-width: .7;
 }
 
-.housing {
+.Town {
   fill: #000080;
   stroke: white;
   stroke-width: .3;
   opacity: 1;
 }
 
-.housing:hover {
+.Town:hover {
   stroke-width: 2;
 }
+
+#ui {
+   position: absolute;
+   right: 1em;
+   top: 1em;
+}   
 
 #ui-controls {
     width: 176px;
@@ -157,8 +158,6 @@ label {
           <li><a href="http://geojson.xyz/"> Wesite for shapefiles</a></li>
         </ul>
       </div>
-
-   
     </footer>
   </div> <!-- end .container-fluid -->
 
@@ -203,6 +202,7 @@ function drawMap(data) {
   // data is array of our two datasets
   const stateData = data[0];
   const housingData = data[1];
+
 // select the HTML element that will hold our map
 const mapContainer = d3.select('#map')
 
@@ -218,7 +218,7 @@ const svg = mapContainer
   .style('top', 40)
   .style('left', 40);
 
-  const geojson = topojson.feature(stateData, {
+const geojson = topojson.feature(stateData, {
   type: 'GeometryCollection',
   geometries: stateData.objects.cb_2018_09_bg_500k.geometries
 });
@@ -230,14 +230,14 @@ const path = d3.geoPath()
   .projection(projection)
 
 const Conn = svg.append('g')
-  .selectAll('path')
+  .selectAll('paths')
   .data(geojson.features)
   .join('path')
   .attr('d', path)
   .attr('class', 'counties');
 
   // define radius generator
-const radius = d3.scaleSqrt().domain([0, 1e6]).range([1, 9]);
+const radius = d3.scaleSqrt().domain([0, 1e4]).range([1, 9]);
 
  // define color generator
 const color = d3.scaleOrdinal(d3.schemeDark2);
@@ -246,50 +246,52 @@ console.log(svg)
 
 
 const housing = svg.append('g')  // append new g element
-  .selectAll('point')  // select all the pointa
-  .data(stateData, housingData)  // use the state geojson for coordinates and housing CSV data
+  .selectAll('circle')  // select all the circles
+  .data(stateData, housingData.sort(function (a, b) {
+    return b.Total - a.Total;
+  }))  // use the state geojson for coordinates and housing CSV data
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
-    d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
+    d.position = projection([d.arcs]);  // create a new data attribute
     return d.position[0];  // position the x
   })
   .attr('cy', d => {
     return d.position[1];  // position the y
   })
- 
-  .attr('r', d => {
-    return radius(+d.Total);
-  })
+ .attr('r', d => {
+   return radius(+d.Total);
+ }) 
   .style('fill', d => {
-  return color(d.Percent_Affordable);
+  return color(d.columns);
 })
+.attr('r', 2)  // define the radius
   .attr('class', 'Town');  // give each a class name
 
 // Create div for the tooltip and hide with opacity
 const tooltip = d3.select('.container-fluid')
 	.append('div')
-	.attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
+	.attr('class', 'my-tooltip bg-primary text-white py-1 px-2 rounded position-absolute invisible')
 
-housing.on('mouseover', (d, i, nodes) => {
-	coords = d3.mouse(nodes[i])
-	console.log(coords)
-  tooltip.style('left', `${coords[0] + 30}px`)
-  .style('top', `${coords[1] + 30}px`);
-  d3.select(nodes[i])
+housing.on('mouseover', (d, Code, nodes) => {
+	coords = d3.mouse(arcs)
+	console.log(arcs)
+  tooltip.style('left', `${coords[i] + 30}px`)
+  .style('top', `${coords[i] + 30}px`);
+  d3.select(nodes[Code])
   .classed('hover', true)
   tooltip.classed('invisible', false)
   .html(`<h4>${d.Town}</h4>${d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
   units`)
 })
 
-housing.on('mousemove', (d, i, nodes) => {
-  d3.select(nodes[i])
+housing.on('mousemove', (d, Code, nodes) => {
+  d3.select(nodes[Code])
     .classed('hover', true)
     tooltip.classed('invisible', false)
 })
 
-housing.on('mouseout', (d, i, nodes) => {
-  d3.select(nodes[i])
+housing.on('mouseout', (d, Code, nodes) => {
+  d3.select(nodes[Code])
   .classed('hover', true)
   tooltip.classed('invisible', false)
 })
@@ -304,8 +306,8 @@ let uniqueTypes = [];
 
 // loop through all features and push unique types to array
 housingData.forEach(function (housing) {
-  if (!uniqueTypes.includes(housing.Census_Units)) {
-    uniqueTypes.push(housing.Census_Units);
+  if (!uniqueTypes.includes(housing.columns)) {
+    uniqueTypes.push(housing.columns);
   }
 });
 
@@ -336,7 +338,7 @@ d3.select('#ui .dropdown-menu').selectAll('a')
   // change the display property for each circle
   housing.style('display', d => {
     if (val === 'All Housing Stats') return 'inline';
-    if (d.Census_Units != val) return 'none';
+    if (d.columns != val) return 'none';
   });
 
   d3.select('#ui > a').html(val);  // update the UI with current val
@@ -349,7 +351,7 @@ function drawLegend(svg, width, height, radius ) {
   .attr('class', 'legend')
   .attr('transform', 'translate(' + (width - 20) + ',' + (height - 20) + ')')
   .selectAll('g')
-  .data([1e4, 2e4])
+  .data([1e4, 3e4])
   .join('g');
 
 legend.append('circle')
