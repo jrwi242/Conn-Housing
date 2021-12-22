@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <title>Affordable Housing Statistics in Conneticut for 2011-2016</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/sandstone/bootstrap.min.css" 
+  integrity="sha384-zEpdAL7W11eTKeoBJK1g79kgl9qjP7g84KfK3AZsuonx38n8ad+f5ZgXtoSDxPOh" crossorigin="anonymous">
+  <style>
+    #map {
+      width: 100%;
+      height: calc(40vh);
+    }
+
+    #about {
+      max-height: calc(80vh);
+      overflow-y: scroll;
+    }
+
+
+    .legend circle {
+      fill: none;
+      stroke: #ccc;
+    }
+
+    .legend text {
+      fill: #777;
+      font: 14px sans-serif;
+      text-anchor: middle;
+    }
+ 
+    .counties {
+  fill: #61aab6;
+  stroke: whitesmoke;
+  stroke-width: .7;
+}
+
+.Town {
+  fill: #000080;
+  stroke: white;
+  stroke-width: .3;
+  opacity: 1;
+}
+
+.Town:hover {
+  stroke-width: 2;
+}
+
+#ui {
+   position: absolute;
+   right: 1em;
+   top: 1em;
+}   
+
+#ui-controls {
+    width: 176px;
+    padding: 8px 25px 8px 15px;
+    background: rgba(75, 75, 75, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    color: whitesmoke;
+}
+
+#ui-controls .min {
+    float: left;
+}
+
+#ui-controls .max {
+    float: right;
+    margin-right: -15px;
+}
+
+.year-slider {
+    width: 100%;
+}
+
+
+label {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+    /* Small devices (landscape phones, 576px and up) */
+    @media (min-width: 576px) {}
+
+    /* Medium devices (tablets, 768px and up) */
+    @media (min-width: 768px) {
+      #map {
+        height: calc(60vh);
+      }
+    }
+
+    /* Large devices (desktops, 992px and up) */
+    @media (min-width: 992px) {
+
+      #map {
+        height: calc(80vh);
+      }
+    }
+
+    /* Extra large devices (large desktops, 1200px and up) */
+    @media (min-width: 1200px) {}
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container-fluid">
+    <header class="row py-3 bg-dark text-white">
+      <div class="col mx-2">
+        <h1 class="h1">Affordable Housing in Conneticut</h1>
+      </div>
+      
+    </header>
+
+    <section class="row bg-secondary ">
+      <div class="col-12 col-md-7 col-lg-8 px-0">
+        <div id="map" class="bg-light position-relative"></div>
+      </div>
+      <aside id="about" class="col-12 col-md-5 col-lg-4 text-dark py-2">
+
+        <div id="ui" class="dropdown">
+          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            Housing Statistics
+          </a>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"></div>
+          </div>
+          <img src="data/Connecticut-state-flag.jpg">
+   <div id="map"></div>
+<div id="ui-controls">
+    <input type="range" min="2011" max="2016"
+           value="2011" step="1" class="year-slider">
+    </input>
+</div>   
+        <section>   
+          <h2 class="h2 text-dark">About this map</h2>
+          
+          <p> Created with Mapshaper, flat files and D3 documents. </p>
+          <p> My inspiration to make this map came from recent events and personal experience. 
+          The end of the rent moriatorium and articles on the rise of rental prices to pre-pandemic housing roused a question. 
+          How available is affordble housing? My part comes from my own frustration at finding a new home myself. 
+          Looking at a different state and time period helps gives me a more objective view. </p>
+     
+        </section>
+      </aside>
+    </section>
+    <footer class="row bg-dark text-white py-3">
+      <div class="col mx-2">
+        <ul class="list-unstyled">
+          <li>jrwi242 or Joyia Williams</li>
+          <li>December 12, 2021</li>
+          <li><a href="https://catalog.data.gov/dataset/affordable-housing-by-town-2011-present">meta data</a></li>
+          <li><a href="http://geojson.xyz/"> Wesite for shapefiles</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div> <!-- end .container-fluid -->
+
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+
+  <script src="https://d3js.org/d3.v5.js"></script>
+  <script src="https://unpkg.com/topojson@3"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"
+    integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ=="
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer">
+</script>
+
+  <script>
+
+// asynchronous calls to data files
+const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
+const ahCSV = d3.csv('data/Affordable_Housing.csv');
+
+// use promise to call all data files, then send data to callback
+Promise.all([stateJson, ahCSV])
+  .then(drawMap)
+  .catch(error => {
+    console.log(error)
+  });
+
+  // function called when Promise above is complete
+function drawMap(data) {
+  
+  console.log(data);  // our two datasets within an array
+
+  // data is array of our two datasets
+  const stateData = data[0];
+  const housingData = data[1];
+
+// select the HTML element that will hold our map
+const mapContainer = d3.select('#map')
+
+// determine width and height of map from container
+const width = mapContainer.node().offsetWidth - 60;
+const height = mapContainer.node().offsetHeight - 60;
+
+const svg = mapContainer
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
+  .classed('position-absolute', true) // add bootstrap class
+  .style('top', 40)
+  .style('left', 40);
+
+const geojson = topojson.feature(stateData, {
+  type: 'GeometryCollection',
+  geometries: stateData.objects.cb_2018_09_bg_500k.geometries
+});
+
+const projection = d3.geoAlbersUsa()
+  .fitSize([width, height], geojson);
+
+const path = d3.geoPath()
+  .projection(projection)
+
+const Conn = svg.append('g')
+  .selectAll('paths')
+  .data(geojson.features)
+  .join('path')
+  .attr('d', path)
+  .attr('class', 'counties');
+
+  // define radius generator
+const radius = d3.scaleSqrt().domain([0, 1e4]).range([1, 9]);
+
+ // define color generator
+const color = d3.scaleOrdinal(d3.schemeDark2);
+
+console.log(svg)
+
+
+const housing = svg.append('g')  // append new g element
+  .selectAll('circle')  // select all the circles
+  .data(stateData, housingData.sort(function (a, b) {
+    return b.Total - a.Total;
+  }))  // use the state geojson for coordinates and housing CSV data
+  .join('circle')  // join that data to circle elements
+  .attr('cx', d => {  // feed the long/lat to the projection generator
+    d.position = projection([d.arcs]);  // create a new data attribute
+    return d.position[0];  // position the x
+  })
+  .attr('cy', d => {
+    return d.position[1];  // position the y
+  })
+ .attr('r', d => {
+   return radius(+d.Total);
+ }) 
+  .style('fill', d => {
+  return color(d.columns);
+})
+.attr('r', 2)  // define the radius
+  .attr('class', 'Town');  // give each a class name
+
+// Create div for the tooltip and hide with opacity
+const tooltip = d3.select('.container-fluid')
+	.append('div')
+	.attr('class', 'my-tooltip bg-primary text-white py-1 px-2 rounded position-absolute invisible')
+
+housing.on('mouseover', (d, Code, nodes) => {
+	coords = d3.mouse(arcs)
+	console.log(arcs)
+  tooltip.style('left', `${coords[i] + 30}px`)
+  .style('top', `${coords[i] + 30}px`);
+  d3.select(nodes[Code])
+  .classed('hover', true)
+  tooltip.classed('invisible', false)
+  .html(`<h4>${d.Town}</h4>${d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
+  units`)
+})
+
+housing.on('mousemove', (d, Code, nodes) => {
+  d3.select(nodes[Code])
+    .classed('hover', true)
+    tooltip.classed('invisible', false)
+})
+
+housing.on('mouseout', (d, Code, nodes) => {
+  d3.select(nodes[Code])
+  .classed('hover', true)
+  tooltip.classed('invisible', false)
+})
+
+  drawLegend(svg, width, height, radius)
+  filterByAttribute(housingData, housing, color);
+} // end drawMap()
+
+function filterByAttribute(housingData, housing) {
+// array to hold select options
+let uniqueTypes = [];
+
+// loop through all features and push unique types to array
+housingData.forEach(function (housing) {
+  if (!uniqueTypes.includes(housing.columns)) {
+    uniqueTypes.push(housing.columns);
+  }
+});
+
+// sort strings alphabetically
+uniqueTypes.sort();
+
+// add an all facilities to the beginning
+uniqueTypes.unshift('All Housing Stats');
+
+// select all the options (that don't exist yet)
+d3.select('#ui .dropdown-menu').selectAll('a')
+  .data(uniqueTypes) // use array as data
+  .join('a') // append a new option element for each data item
+  .text(d => {
+    return d // use the item as text
+  })
+  .attr('value', d => {
+    return d // use the time as value attribute
+  })
+  .attr('href', '#')
+  .classed('dropdown-item', true)
+  .on('click', onchange);  // when the user clicks call onchange function
+
+  function onchange() {
+  // get the currently selected value
+  let val = d3.select(this).attr('value');
+  
+  // change the display property for each circle
+  housing.style('display', d => {
+    if (val === 'All Housing Stats') return 'inline';
+    if (d.columns != val) return 'none';
+  });
+
+  d3.select('#ui > a').html(val);  // update the UI with current val
+}
+}
+
+function drawLegend(svg, width, height, radius ) {
+  const legend = svg.append('g')
+  .attr('dy', '1.3em')
+  .attr('class', 'legend')
+  .attr('transform', 'translate(' + (width - 20) + ',' + (height - 20) + ')')
+  .selectAll('g')
+  .data([1e4, 3e4])
+  .join('g');
+
+legend.append('circle')
+  .attr('cy', d => {
+    return -radius(d);
+  })
+  .attr('r', radius);
+
+legend.append('text')
+  .attr('y', d => {
+    return -2 * radius(d);
+  })
+  .attr('dy', '1.3em')
+  .text(d3.format('.1s'));
+
+legend.append('text')
+  .attr('y', 16)
+  .text('Units');
+
+} // end draw legend
+
+  </script>
+</body>
+
+</html>
