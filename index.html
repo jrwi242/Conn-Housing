@@ -254,10 +254,10 @@ const housing = svg.append('g')  // append new g element
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
     d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
-    return d.position[0];  // position the x
+    return d.position[Latitude];  // position the x
   })
   .attr('cy', d => {
-    return d.position[1];  // position the y
+    return d.position[Longitude];  // position the y
   })
  .attr('r', d => {
    return radius(+d.Total);
@@ -307,8 +307,8 @@ let uniqueTypes = [];
 
 // loop through all features and push unique types to array
 housingData.forEach(function (housing) {
-  if (!uniqueTypes.includes(housing.columns)) {
-    uniqueTypes.push(housing.columns);
+  if (!uniqueTypes.includes(housing.Total_Assisted_Units)) {
+    uniqueTypes.push(housing.Total_Assisted_Units);
   }
 });
 
@@ -339,7 +339,7 @@ d3.select('#ui .dropdown-menu').selectAll('a')
   // change the display property for each circle
   housing.style('display', d => {
     if (val === 'All Housing Stats') return 'inline';
-    if (d.columns != val) return 'none';
+    if (d.Code != val) return 'none';
   });
 
   d3.select('#ui > a').html(val);  // update the UI with current val
