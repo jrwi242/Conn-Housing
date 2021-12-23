@@ -253,7 +253,7 @@ const housing = svg.append('g')  // append new g element
   }))  // use the state geojson for coordinates and housing CSV data
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
-    d.position = projection([d.lat, d.lng]);  // create a new data attribute
+    d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
     return d.position[0];  // position the x
   })
   .attr('cy', d => {
@@ -273,15 +273,15 @@ const tooltip = d3.select('.container-fluid')
 	.append('div')
 	.attr('class', 'my-tooltip bg-primary text-white py-1 px-2 rounded position-absolute invisible')
 
-housing.on('mouseover', (d, Code, nodes) => {
-	coords = d3.mouse(arcs)
-	console.log(arcs)
-  tooltip.style('left', `${coords[i] + 30}px`)
-  .style('top', `${coords[i] + 30}px`);
-  d3.select(nodes[Code])
+housing.on('mouseover', (d, i, nodes) => {
+	coords = d3.mouse(nodes[i])
+	console.log(coords)
+  tooltip.style('left', `${coords[0] + 30}px`)
+  .style('top', `${coords[1] + 30}px`);
+  d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.columns}<br>${Number(d.Total).toLocaleString()} 
   units`)
 })
 
