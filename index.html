@@ -186,10 +186,10 @@ label {
 
 // asynchronous calls to data files
 const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
-const ahCSV = d3.csv('data/ct_towns_cities.csv');
+const townsCSV = d3.csv('data/ct_towns_cities.csv');
 
 // use promise to call all data files, then send data to callback
-Promise.all([stateJson, ahCSV])
+Promise.all([stateJson, townsCSV])
   .then(drawMap)
   .catch(error => {
     console.log(error)
