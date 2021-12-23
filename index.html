@@ -231,14 +231,14 @@ const path = d3.geoPath()
   .projection(projection)
 
 const Conn = svg.append('g')
-  .selectAll('paths')
+  .selectAll('path')
   .data(geojson.features)
   .join('path')
   .attr('d', path)
   .attr('class', 'counties');
 
   // define radius generator
-const radius = d3.scaleSqrt().domain([0, 1e4]).range([1, 9]);
+const radius = d3.scaleSqrt().domain([0, 1e6]).range([1, 6]);
 
  // define color generator
 const color = d3.scaleOrdinal(d3.schemeDark2);
