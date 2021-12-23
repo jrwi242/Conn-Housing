@@ -248,9 +248,7 @@ console.log(svg)
 
 const housing = svg.append('g')  // append new g element
   .selectAll('circle')  // select all the circles
-  .data(housingData.sort(function (a, b) {
-    return b.Total - a.Total;
-  }))  // use the state geojson for coordinates and housing CSV data
+  .data(housingData)  // use the state geojson for coordinates and housing CSV data
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
     d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
@@ -263,10 +261,9 @@ const housing = svg.append('g')  // append new g element
    return radius(+d.Total);
  }) 
   .style('fill', d => {
-  return color(d.Percent_Affordable);
+  return color(d.Total_Assisted_Units);
 })
-.attr('r', 3)  // define the radius
-  .attr('class', 'Town');  // give each a class name
+.attr('class', 'Town');  // give each a class name
 
 // Create div for the tooltip and hide with opacity
 const tooltip = d3.select('.container-fluid')
@@ -281,7 +278,7 @@ housing.on('mouseover', (d, i, nodes) => {
   d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.Percent_Affordable}<br>${Number(d.Total_Assisted_Units).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.list_id_uscities}<br>${Number(d.Total_Assisted_Units).toLocaleString()} 
   units`)
 })
 
