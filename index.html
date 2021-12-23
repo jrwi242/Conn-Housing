@@ -201,8 +201,8 @@ function drawMap(data) {
   console.log(data);  // our two datasets within an array
 
   // data is array of our two datasets
-  const stateData = data[0];
-  const housingData = data[1];
+const stateData = data[0];
+const housingData = data[1];
 
 // select the HTML element that will hold our map
 const mapContainer = d3.select('#map')
@@ -254,18 +254,18 @@ const housing = svg.append('g')  // append new g element
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
     d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
-    return d.position[Latitude];  // position the x
+    return d.position[0];  // position the x
   })
   .attr('cy', d => {
-    return d.position[Longitude];  // position the y
+    return d.position[1];  // position the y
   })
  .attr('r', d => {
    return radius(+d.Total);
  }) 
   .style('fill', d => {
-  return color(d.columns);
+  return color(d.Percent_Affordable);
 })
-.attr('r', 2)  // define the radius
+.attr('r', 3)  // define the radius
   .attr('class', 'Town');  // give each a class name
 
 // Create div for the tooltip and hide with opacity
@@ -281,18 +281,18 @@ housing.on('mouseover', (d, i, nodes) => {
   d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.columns}<br>${Number(d.Total).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.Percent_Affordable, d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
   units`)
 })
 
-housing.on('mousemove', (d, Code, nodes) => {
-  d3.select(nodes[Code])
+housing.on('mousemove', (d, i, nodes) => {
+  d3.select(nodes[i])
     .classed('hover', true)
     tooltip.classed('invisible', false)
 })
 
-housing.on('mouseout', (d, Code, nodes) => {
-  d3.select(nodes[Code])
+housing.on('mouseout', (d, i, nodes) => {
+  d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
 })
