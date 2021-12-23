@@ -281,7 +281,7 @@ housing.on('mouseover', (d, i, nodes) => {
   d3.select(nodes[i])
   .classed('hover', true)
   tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.Percent_Affordable, d.Total_Assisted_Units}<br>${Number(d.Total).toLocaleString()} 
+  .html(`<h4>${d.Town}</h4>${d.Percent_Affordable}<br>${Number(d.Total_Assisted_Units).toLocaleString()} 
   units`)
 })
 
