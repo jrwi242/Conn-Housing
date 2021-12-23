@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+  
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -183,7 +183,7 @@ label {
 </script>
 
   <script>
-
+// import {Choropleth} from "@d3/choropleth"
 // asynchronous calls to data files
 const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
 const townsCSV = d3.csv('data/ct_towns_cities.csv');
@@ -237,65 +237,44 @@ const Conn = svg.append('g')
   .attr('d', path)
   .attr('class', 'counties');
 
-  // define radius generator
-const radius = d3.scaleSqrt().domain([0, 1e6]).range([1, 6]);
-
  // define color generator
-const color = d3.scaleOrdinal(d3.schemeDark2);
+const color = d3.scaleQuantize(d3.schemeDark2);
 
 console.log(svg)
 
-
-const housing = svg.append('g')  // append new g element
-  .selectAll('circle')  // select all the circles
-  .data(housingData)  // use the state geojson for coordinates and housing CSV data
-  .join('circle')  // join that data to circle elements
-  .attr('cx', d => {  // feed the long/lat to the projection generator
-    d.position = projection([d.Longitude, d.Latitude]);  // create a new data attribute
-    return d.position[0];  // position the x
-  })
-  .attr('cy', d => {
-    return d.position[1];  // position the y
-  })
- .attr('r', d => {
-   return radius(+d.Total);
- }) 
+const housing = svg.append('g')
+.data(housingData)
   .style('fill', d => {
-  return color(d.Total_Assisted_Units);
+  return color(d.Census_Units);
 })
-.attr('class', 'Town');  // give each a class name
+  .attr('class', 'Town');  // give each circle a class name
 
-// Create div for the tooltip and hide with opacity
-const tooltip = d3.select('.container-fluid')
-	.append('div')
-	.attr('class', 'my-tooltip bg-primary text-white py-1 px-2 rounded position-absolute invisible')
-
-housing.on('mouseover', (d, i, nodes) => {
-	coords = d3.mouse(nodes[i])
-	console.log(coords)
-  tooltip.style('left', `${coords[0] + 30}px`)
-  .style('top', `${coords[1] + 30}px`);
-  d3.select(nodes[i])
-  .classed('hover', true)
-  tooltip.classed('invisible', false)
-  .html(`<h4>${d.Town}</h4>${d.list_id_uscities}<br>${Number(d.Total_Assisted_Units).toLocaleString()} 
-  units`)
+chart = Choropleth(housingData, {
+id: d => d.list_id_uscities,
+value: d => d.Percent_Affordable,
+scale: d3.scaleQuantize,
+domain: [1, 10],
+range: d3.schemeDark2[9],
+title: (f, d) => `${f.properties.name}, ${stateData.get(f.id.slice(0, 2)).properties.name}\n${d?.Percent_Affordable}%`,
+features: Town,
+borders: counties,
+width: 975,
+height: 610,
+projection, // a D3 projection; null for pre-projected geometry
+  features, // a GeoJSON feature collection
+  featureId: d => d.list_id_uscities, // given a feature, returns its id
+  borders, // a GeoJSON object for stroking borders
+  outline: projection && projection.rotate ? {type: "Sphere"} : null, // a GeoJSON object for the background
+  unknown: "#ccc", // fill color for missing data
+  fill: "white", // fill color for outline
+  stroke: "white", // stroke color for borders
+  strokeLinecap: "round", // stroke line cap for borders
+  strokeLinejoin: "round", // stroke line join for borders
+  strokeWidth, // stroke width for borders
+  strokeOpacity, // stroke opacity for borders
 })
-
-housing.on('mousemove', (d, i, nodes) => {
-  d3.select(nodes[i])
-    .classed('hover', true)
-    tooltip.classed('invisible', false)
-})
-
-housing.on('mouseout', (d, i, nodes) => {
-  d3.select(nodes[i])
-  .classed('hover', true)
-  tooltip.classed('invisible', false)
-})
-
-  drawLegend(svg, width, height, radius)
-  filterByAttribute(housingData, housing, color);
+filterByAttribute(housingData, housing, color);
+drawLegend(svg, width, height)
 } // end drawMap()
 
 function filterByAttribute(housingData, housing) {
@@ -343,32 +322,23 @@ d3.select('#ui .dropdown-menu').selectAll('a')
 }
 }
 
-function drawLegend(svg, width, height, radius ) {
-  const legend = svg.append('g')
+function drawLegend(svg, width, height, Choropleth ) {
+  
+const legend = svg.append('g')
   .attr('dy', '1.3em')
   .attr('class', 'legend')
-  .attr('transform', 'translate(' + (width - 20) + ',' + (height - 20) + ')')
+  .attr('transform', 'translate(' + (width - 40) + ',' + (height - 20) + ')')
   .selectAll('g')
-  .data([1e4, 3e4])
+  .data([5e6, 2e7])
   .join('g');
 
-legend.append('circle')
-  .attr('cy', d => {
-    return -radius(d);
-  })
-  .attr('r', radius);
-
-legend.append('text')
-  .attr('y', d => {
-    return -2 * radius(d);
-  })
-  .attr('dy', '1.3em')
-  .text(d3.format('.1s'));
+  Legend(d3.scaleQuantize([1, 10], d3.schemeRdBu[9]), {
+  title: "Percentage of Affordable Housing (%)"
+})
 
 legend.append('text')
   .attr('y', 16)
-  .text('Units');
-
+  .text('Percent');
 } // end draw legend
 
   </script>
