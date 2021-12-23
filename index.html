@@ -155,7 +155,8 @@ label {
           <li>jrwi242 or Joyia Williams</li>
           <li>December 12, 2021</li>
           <li><a href="https://catalog.data.gov/dataset/affordable-housing-by-town-2011-present">meta data</a></li>
-          <li><a href="http://geojson.xyz/"> Website for shapefiles</a></li>
+          <li><a href="http://geojson.xyz/"> Websites for shapefiles</a></li>
+          <li><a href="https://simplemaps.com/data/us-cities"></a></li>
         </ul>
       </div>
     </footer>
@@ -185,7 +186,7 @@ label {
 
 // asynchronous calls to data files
 const stateJson = d3.json('data/cb_2018_09_bg_500k.json');
-const ahCSV = d3.csv('data/Affordable_Housing.csv');
+const ahCSV = d3.csv('data/ct_towns_cities.csv');
 
 // use promise to call all data files, then send data to callback
 Promise.all([stateJson, ahCSV])
@@ -247,12 +248,12 @@ console.log(svg)
 
 const housing = svg.append('g')  // append new g element
   .selectAll('circle')  // select all the circles
-  .data(stateData, housingData.sort(function (a, b) {
+  .data(housingData.sort(function (a, b) {
     return b.Total - a.Total;
   }))  // use the state geojson for coordinates and housing CSV data
   .join('circle')  // join that data to circle elements
   .attr('cx', d => {  // feed the long/lat to the projection generator
-    d.position = projection([d.arcs]);  // create a new data attribute
+    d.position = projection([d.lat, d.lng]);  // create a new data attribute
     return d.position[0];  // position the x
   })
   .attr('cy', d => {
