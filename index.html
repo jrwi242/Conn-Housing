@@ -197,7 +197,28 @@ Promise.all([stateJson, townsCSV])
 
   // function called when Promise above is complete
 function drawMap(data) {
-  
+   map.selectAll('path')
+    .data(housingData)
+    .enter()
+    .append('path')
+    .attr('d', d3.geoPath())
+    .attr('class', 'Town')
+    .attr('fill', (housingDataItem) => {
+      let id = housingDataItem['id']
+      let town = housingData.find((item) => {
+        return item['list_id_uscities'] === id
+      })
+      let  Allunits = Town['Total_Assisted_Units']
+      if (Allunits <= 30) {
+        return 'tomato'
+      } else if (Allunits <= 40){
+        return 'orange'
+      } else if (Allunits <= 50){
+        return 'lightgreen'
+        } else {
+          return 'forestgreen'
+        }
+    })
   console.log(data);  // our two datasets within an array
 
   // data is array of our two datasets
@@ -243,39 +264,21 @@ const color = d3.scaleQuantize(d3.schemeDark2);
 console.log(svg)
 
 const housing = svg.append('g')
-.data(housingData)
+  .data(housingData)
   .style('fill', d => {
   return color(d.Census_Units);
 })
   .attr('class', 'Town');  // give each circle a class name
 
-chart = Choropleth(housingData, {
-id: d => d.list_id_uscities,
-value: d => d.Percent_Affordable,
-scale: d3.scaleQuantize,
-domain: [1, 10],
-range: d3.schemeDark2[9],
-title: (f, d) => `${f.properties.name}, ${stateData.get(f.id.slice(0, 2)).properties.name}\n${d?.Percent_Affordable}%`,
-features: Town,
-borders: counties,
-width: 975,
-height: 610,
-projection, // a D3 projection; null for pre-projected geometry
-  features, // a GeoJSON feature collection
-  featureId: d => d.list_id_uscities, // given a feature, returns its id
-  borders, // a GeoJSON object for stroking borders
-  outline: projection && projection.rotate ? {type: "Sphere"} : null, // a GeoJSON object for the background
-  unknown: "#ccc", // fill color for missing data
-  fill: "white", // fill color for outline
-  stroke: "white", // stroke color for borders
-  strokeLinecap: "round", // stroke line cap for borders
-  strokeLinejoin: "round", // stroke line join for borders
-  strokeWidth, // stroke width for borders
-  strokeOpacity, // stroke opacity for borders
-})
-filterByAttribute(housingData, housing, color);
-drawLegend(svg, width, height)
+  
+// Create div for the tooltip and hide with opacity
+const tooltip = d3.select('.container-fluid')
+	.append('div')
+	.attr('class', 'my-tooltip bg-primary text-white py-1 px-1 rounded position-absolute invisible')
+housing.on('mouseover', )
+
 } // end drawMap()
+
 
 function filterByAttribute(housingData, housing) {
 // array to hold select options
@@ -283,8 +286,8 @@ let uniqueTypes = [];
 
 // loop through all features and push unique types to array
 housingData.forEach(function (housing) {
-  if (!uniqueTypes.includes(housing.Total_Assisted_Units)) {
-    uniqueTypes.push(housing.Total_Assisted_Units);
+  if (!uniqueTypes.includes(housing.list_id_uscities)) {
+    uniqueTypes.push(housing.selectAll);
   }
 });
 
@@ -314,15 +317,15 @@ d3.select('#ui .dropdown-menu').selectAll('a')
   
   // change the display property for each circle
   housing.style('display', d => {
-    if (val === 'All Housing Stats') return 'inline';
-    if (d.Code != val) return 'none';
+    if (val === all) return 'inline';
+    if (d.null != val) return 'none';
   });
 
   d3.select('#ui > a').html(val);  // update the UI with current val
 }
 }
 
-function drawLegend(svg, width, height, Choropleth ) {
+function drawLegend(svg, width, height) {
   
 const legend = svg.append('g')
   .attr('dy', '1.3em')
